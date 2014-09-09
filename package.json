@@ -1,0 +1,26 @@
+{
+  "name": "scrap-candidatos-eleicoes-2014",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:nucleo-digital/scrap-candidatos-eleicoes-2014.git"
+  },
+  "author": "Lucas Pirola",
+  "license": "GPL v3",
+  "bugs": {
+    "url": "https://github.com/nucleo-digital/scrap-candidatos-eleicoes-2014/issues"
+  },
+  "homepage": "https://github.com/nucleo-digital/scrap-candidatos-eleicoes-2014",
+  "dependencies": {
+    "underscore": "~1.7.0",
+    "mongoose": "~3.8.16",
+    "q": "~1.0.1",
+    "request": "~2.42.0",
+    "cheerio": "~0.17.0"
+  }
+}
