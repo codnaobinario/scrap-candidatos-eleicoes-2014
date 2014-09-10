@@ -61,7 +61,7 @@ var Import = {
   search_candidates : function() {
     var deferred     = Q.defer(),
         total_states = _.size(Import.states)-1,
-        candidates   = [],
+        candidates   = new Array,
         bar          = new ProgressBar('Searching states :bar', { total: total_states });
 
     _.each(Import.states, function (uf, idx, l) {
@@ -70,7 +70,7 @@ var Import = {
         var url = '/divulga-cand-2014/eleicao/2014/UF/'+uf.key+'/candidatos/cargo/'+cargo.key;
         Import.call(url,
           function (err, response, body) {
-
+        console.log(url);
             if (err) {
               deferred.reject(err);
               throw err;
@@ -80,9 +80,7 @@ var Import = {
             $('#tbl-candidatos tbody tr td a').each(function(i, el) {
               candidates.push({'cand_id':el.attribs.id.slice(5),'href':el.attribs.href});
             });
-            // console.log(candidates);
-
-            if ((parseInt(idx) === parseInt(total_states)) && (cargo.key == 10)) {
+            if (parseInt(idx) === parseInt(total_states)) {
               Import.candidates = candidates;
               deferred.resolve(Import);
             }
@@ -93,6 +91,12 @@ var Import = {
     return deferred.promise;
   },
 
+  parseDate : function (input) {
+    var parts = input.split('/');
+    // new Date(year, month [, day [, hours[, minutes[, seconds[, ms]]]]])
+    return new Date(parts[2], parts[1]-1, parts[0]); // Note: months are 0-based
+  },
+
   read_profile : function () {
     var deferred = Q.defer(),
       total_candidates = _.size(Import.candidates)-1,
@@ -101,6 +105,7 @@ var Import = {
     _.each(Import.candidates, function (profile, idx) {
       Import.call(profile.href,
         function (err, response, body) {
+          console.log(profile.href);
           if (err) {
             deferred.reject(err);
             throw err;
@@ -112,7 +117,7 @@ var Import = {
 
           profile.nome_urna       = $('body > div.container > div.col-md-10 > table > tbody > tr:nth-child(1) > td:nth-child(2)').text();
           profile.nome_completo   = $('body > div.container > div.col-md-10 > table > tbody > tr:nth-child(2) > td:nth-child(2)').text();
-          profile.data_nascimento = $('body > div.container > div.col-md-10 > table > tbody > tr:nth-child(3) > td:nth-child(2)').text();
+          profile.data_nascimento = Import.parseDate($('body > div.container > div.col-md-10 > table > tbody > tr:nth-child(3) > td:nth-child(2)').text());
           profile.raca            = $('body > div.container > div.col-md-10 > table > tbody > tr:nth-child(4) > td:nth-child(2)').text();
           profile.nacionalidade   = $('body > div.container > div.col-md-10 > table > tbody > tr:nth-child(5) > td:nth-child(2)').text();
           profile.grau_instrucao  = $('body > div.container > div.col-md-10 > table > tbody > tr:nth-child(6) > td:nth-child(2)').text();
@@ -130,9 +135,17 @@ var Import = {
           profile.numero_protocolo = $('body > div.container > div.col-md-10 > table > tbody > tr:nth-child(10) > td:nth-child(4)').text();
           profile.limite_gastos   = $('body > div.container > div.col-md-10 > table > tbody > tr:nth-child(11) > td:nth-child(4)').text();
 
-          Import.candidates[idx] = profile;
+            var candidate = new CandidateModel();
+            candidate = _.extend(candidate, profile);
+
+            // save the bear and check for errors
+            candidate.save(function(err) {
+            if (err) {
+                console.error(err);
+            }
+          });
           if (parseInt(idx) === parseInt(total_candidates)) {
-            deferred.resolve(Import);
+            deferred.resolve(Import.candidates);
           }
           bar.tick();
         });
@@ -146,24 +159,26 @@ var Import = {
 Q.fcall(Import.search_states)
   .then(Import.search_candidates)
   .then(Import.read_profile)
-  .then(function (result) {
-    var total_candidates = _.size(result.candidates)-1;
-    var bar = new ProgressBar('Saving candidates :bar', { total: total_candidates });
-
-    _.each(result.candidates, function(vv) {
-      console.log(vv);
-      var candidate = new CandidateModel();
-      candidate = _.extend(candidate, vv);
-
-      // save the bear and check for errors
-      candidate.save(function(err) {
-        if (err) {
-            console.error(err);
-        }
-      });
-    });
-  })
   .catch(function (error) {
       console.error(error);
   })
-  .done();
+  .then(function (result) {
+    console.log(result);
+    // var total_candidates = _.size(result.candidates)-1;
+    // var bar = new ProgressBar('Saving candidates :bar', { total: total_candidates });
+
+    // _.each(result.candidates, function(vv) {
+    //   var candidate = new CandidateModel();
+    //   candidate = _.extend(candidate, vv);
+
+    //   // save the bear and check for errors
+    //   candidate.save(function(err) {
+    //     if (err) {
+    //         console.error(err);
+    //     }
+    //   });
+    // });
+  });
+
+
+
