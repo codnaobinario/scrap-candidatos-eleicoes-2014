@@ -13,7 +13,7 @@ var CandidateSchema = new Schema({
   raca: { type: String },
   nacionalidade: { type: String },
   grau_instrucao: { type: String },
-  partido: { type: String },
+  partido: { type: String, index: true },
   nome_coligacao: { type: String },
   coligacao: { type: String },
   numero_processo: { type: String },
@@ -25,7 +25,8 @@ var CandidateSchema = new Schema({
   ocupacao: { type: String },
   numero_protocolo: { type: String },
   limite_gastos: { type: String },
-  updated_at: { type: Date }
+  updated_at: { type: Date },
+  cargo: { type: String, index: true }
 });
 
 module.exports = mongoose.model('Candidate', CandidateSchema);
