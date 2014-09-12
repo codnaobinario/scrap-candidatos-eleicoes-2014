@@ -1,4 +1,4 @@
-## Raspagem de dados dos candidatos a eleição de 2014
+## Raspagem de dados dos candidatos as eleições de 2014
 
 ### Como instalar
 
